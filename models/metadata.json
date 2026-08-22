@@ -1,0 +1,184 @@
+{
+  "trained_at": "2026-08-22T17:06:01.833550+00:00",
+  "served_model": "logistic_regression",
+  "candidates": {
+    "linear_svc": {
+      "accuracy": 0.8635957953193177,
+      "macro_f1": 0.8392475192023985
+    },
+    "logistic_regression": {
+      "accuracy": 0.8598770329234431,
+      "macro_f1": 0.8353108974833856
+    }
+  },
+  "classes": [
+    "Bank account",
+    "Consumer loan",
+    "Credit or prepaid card",
+    "Credit reporting",
+    "Debt collection",
+    "Money transfer / virtual currency",
+    "Mortgage",
+    "Student loan"
+  ],
+  "train_rows": 161343,
+  "test_rows": 40336,
+  "vectorizer": {
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 3,
+    "max_features": 100000,
+    "sublinear_tf": true
+  },
+  "metrics": {
+    "accuracy": 0.8598770329234431,
+    "macro_f1": 0.8353108974833856,
+    "weighted_f1": 0.859280247375927,
+    "per_class": {
+      "Bank account": {
+        "precision": 0.8217852684144819,
+        "recall": 0.8269472361809045,
+        "f1-score": 0.8243581715716969,
+        "support": 3184.0
+      },
+      "Consumer loan": {
+        "precision": 0.7693735498839908,
+        "recall": 0.6817434210526315,
+        "f1-score": 0.7229125790276869,
+        "support": 2432.0
+      },
+      "Credit or prepaid card": {
+        "precision": 0.8115818607621886,
+        "recall": 0.8242162162162162,
+        "f1-score": 0.81785024672817,
+        "support": 4625.0
+      },
+      "Credit reporting": {
+        "precision": 0.8801416507763552,
+        "recall": 0.8761637892072675,
+        "f1-score": 0.878148215256387,
+        "support": 11063.0
+      },
+      "Debt collection": {
+        "precision": 0.8333850770982096,
+        "recall": 0.8655417024935511,
+        "f1-score": 0.8491590657457689,
+        "support": 9304.0
+      },
+      "Money transfer / virtual currency": {
+        "precision": 0.8558558558558559,
+        "recall": 0.6874095513748191,
+        "f1-score": 0.7624398073836276,
+        "support": 691.0
+      },
+      "Mortgage": {
+        "precision": 0.929171668667467,
+        "recall": 0.9447665547757095,
+        "f1-score": 0.9369042215161144,
+        "support": 6554.0
+      },
+      "Student loan": {
+        "precision": 0.9090146750524108,
+        "recall": 0.8731373338703181,
+        "f1-score": 0.8907148726376335,
+        "support": 2483.0
+      }
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "Bank account",
+      "Consumer loan",
+      "Credit or prepaid card",
+      "Credit reporting",
+      "Debt collection",
+      "Money transfer / virtual currency",
+      "Mortgage",
+      "Student loan"
+    ],
+    "counts": [
+      [
+        2633,
+        30,
+        265,
+        63,
+        55,
+        53,
+        82,
+        3
+      ],
+      [
+        63,
+        1658,
+        95,
+        208,
+        331,
+        2,
+        61,
+        14
+      ],
+      [
+        225,
+        33,
+        3812,
+        281,
+        239,
+        15,
+        18,
+        2
+      ],
+      [
+        45,
+        145,
+        250,
+        9693,
+        709,
+        1,
+        154,
+        66
+      ],
+      [
+        49,
+        198,
+        186,
+        556,
+        8053,
+        7,
+        135,
+        120
+      ],
+      [
+        126,
+        3,
+        46,
+        8,
+        25,
+        475,
+        6,
+        2
+      ],
+      [
+        54,
+        55,
+        29,
+        117,
+        96,
+        1,
+        6192,
+        10
+      ],
+      [
+        9,
+        33,
+        14,
+        87,
+        155,
+        1,
+        16,
+        2168
+      ]
+    ]
+  }
+}

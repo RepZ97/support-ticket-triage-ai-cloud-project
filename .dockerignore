@@ -1,0 +1,11 @@
+data/
+training/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+*.md
+*.pdf
+requirements-dev.txt
+environment.txt
+.venv/

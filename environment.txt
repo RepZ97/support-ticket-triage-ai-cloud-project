@@ -1,0 +1,18 @@
+# Conda environment for local development.
+#
+#   conda create -n ticket-triage python=3.12 pip -y
+#   conda activate ticket-triage
+#   pip install -r requirements-dev.txt
+#
+# Python is pinned to 3.12 to match the python:3.12-slim base image the
+# container uses, so local runs and deployed runs use the same interpreter.
+
+name: ticket-triage
+python: 3.12
+
+conda:
+  - python=3.12
+  - pip
+
+pip:
+  - -r requirements-dev.txt

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support Ticket Triage</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --border: #dfe3e8;
+    --text: #1c2024;
+    --muted: #6b7480;
+    --accent: #2f6feb;
+    --high: #c62f2f;
+    --medium: #b5761b;
+    --low: #2c7a4b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1rem 4rem;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+  .sub { color: var(--muted); margin: 0 0 1.5rem; font-size: .9rem; }
+  textarea {
+    width: 100%; min-height: 170px; padding: .8rem; resize: vertical;
+    border: 1px solid var(--border); border-radius: 8px;
+    font: inherit; background: var(--panel); color: inherit;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .row { display: flex; gap: .75rem; align-items: center; margin-top: .75rem; flex-wrap: wrap; }
+  button {
+    background: var(--accent); color: #fff; border: 0; border-radius: 8px;
+    padding: .6rem 1.2rem; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button:disabled { opacity: .55; cursor: default; }
+  button.link {
+    background: none; color: var(--accent); font-weight: 400;
+    padding: .6rem 0; text-decoration: underline;
+  }
+  label.toggle { color: var(--muted); font-size: .9rem; display: flex; gap: .4rem; align-items: center; cursor: pointer; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.1rem; margin-top: 1rem;
+  }
+  .card h2 { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em;
+             color: var(--muted); margin: 0 0 .6rem; font-weight: 600; }
+  .cat { font-size: 1.15rem; font-weight: 600; }
+  .bar { height: 6px; background: #e9ecf0; border-radius: 3px; margin-top: .5rem; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); }
+  .alts { color: var(--muted); font-size: .85rem; margin-top: .6rem; }
+  .pill {
+    display: inline-block; padding: .12rem .55rem; border-radius: 999px;
+    font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    color: #fff;
+  }
+  .pill.high { background: var(--high); }
+  .pill.medium { background: var(--medium); }
+  .pill.low { background: var(--low); }
+  .reply { white-space: pre-wrap; margin: 0; }
+  .note { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+  .warn {
+    background: #fff8e6; border-color: #f0ddad; color: #6d5411;
+    font-size: .88rem;
+  }
+  .err { background: #fdecec; border-color: #f3c2c2; color: #8c2020; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a; --panel: #1c2024; --border: #2c3238;
+      --text: #e6e9ec; --muted: #98a2ad; --accent: #5c92f5;
+      --high: #e06060; --medium: #d99a3c; --low: #56b57e;
+    }
+    .bar > i ~ * , .bar { background: #2c3238; }
+    .warn { background: #2a2415; border-color: #4a3f1e; color: #e0cd96; }
+    .err { background: #2c1a1a; border-color: #543030; color: #f0b4b4; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Support Ticket Triage</h1>
+  <p class="sub">Routes a consumer finance complaint to a product queue, then assesses urgency and drafts an agent reply.</p>
+
+  <textarea id="text" placeholder="Paste a customer complaint here..."></textarea>
+
+  <div class="row">
+    <button id="go">Triage</button>
+    <label class="toggle"><input type="checkbox" id="assess" checked> Include urgency &amp; draft reply</label>
+    <button class="link" id="sample">Load sample</button>
+  </div>
+
+  <div id="out"></div>
+</main>
+
+<script>
+const SAMPLE = `I have been trying to get my mortgage servicer to correct an escrow error since XXXX. They applied my payment to the wrong account and are now reporting me 60 days late to the credit bureaus. I have sent proof of payment three times. I received a letter this week saying foreclosure proceedings may begin if the balance is not cleared within 30 days. I cannot get anyone on the phone.`;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => (
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+));
+const pct = v => (v * 100).toFixed(1) + '%';
+
+$('sample').onclick = () => { $('text').value = SAMPLE; };
+
+$('go').onclick = async () => {
+  const text = $('text').value.trim();
+  const out = $('out');
+  if (text.length < 20) {
+    out.innerHTML = '<div class="card err">Please enter at least 20 characters.</div>';
+    return;
+  }
+
+  $('go').disabled = true;
+  out.innerHTML = '<div class="card">Analysing...</div>';
+
+  try {
+    const res = await fetch('/triage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, include_assessment: $('assess').checked })
+    });
+    if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+    render(await res.json());
+  } catch (e) {
+    out.innerHTML = '<div class="card err">' + esc(e.message) + '</div>';
+  } finally {
+    $('go').disabled = false;
+  }
+};
+
+function render(data) {
+  const r = data.routing;
+  let html = '';
+
+  const alts = r.alternatives.map(a => esc(a.category) + ' ' + pct(a.confidence)).join(' · ');
+  html += '<div class="card">'
+        + '<h2>Routed to</h2>'
+        + '<div class="cat">' + esc(r.category) + '</div>'
+        + '<div class="bar"><i style="width:' + pct(r.confidence) + '"></i></div>'
+        + '<div class="note">Confidence ' + pct(r.confidence) + '</div>'
+        + (alts ? '<div class="alts">Next best: ' + alts + '</div>' : '')
+        + '</div>';
+
+  const a = data.assessment;
+  if (a) {
+    html += '<div class="card">'
+          + '<h2>Urgency</h2>'
+          + '<span class="pill ' + esc(a.urgency) + '">' + esc(a.urgency) + '</span>'
+          + '<div class="note">' + esc(a.urgency_reason) + '</div>'
+          + '</div>'
+          + '<div class="card"><h2>Summary</h2><p class="reply">' + esc(a.summary) + '</p></div>'
+          + '<div class="card"><h2>Draft reply</h2><p class="reply">' + esc(a.draft_reply) + '</p></div>';
+  } else if (data.assessment_error) {
+    html += '<div class="card warn"><strong>Assessment unavailable.</strong> '
+          + esc(data.assessment_error)
+          + '<div class="note">Routing above still comes from the trained classifier.</div></div>';
+  }
+
+  $('out').innerHTML = html;
+}
+</script>
+</body>
+</html>

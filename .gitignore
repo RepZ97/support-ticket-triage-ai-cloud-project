@@ -1,0 +1,13 @@
+# Datasets are downloaded by training/prepare_data.py, not committed.
+data/
+
+# The assignment brief itself is not part of the deliverable.
+*.pdf
+
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
+.idea/
+.vscode/

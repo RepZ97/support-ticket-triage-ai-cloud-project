@@ -1,0 +1,5 @@
+# Training-only dependencies. Not installed in the container: the model is
+# built ahead of time and only the serialised artifact ships.
+-r requirements.txt
+pandas==3.0.5
+pyarrow==25.0.1

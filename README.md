@@ -4,7 +4,7 @@ An end-to-end AI application that reads a consumer finance complaint, routes it
 to the right product queue with a trained classifier, and then uses Gemini on
 Vertex AI to judge urgency and draft a reply for the agent.
 
-Live deployment: _add your Cloud Run URL here after deploying_
+**Live deployment:** <https://ticket-triage-616119747229.us-central1.run.app>
 
 ---
 
@@ -281,7 +281,31 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
     artifactregistry.googleapis.com aiplatform.googleapis.com
 ```
 
-Deploy from source — Cloud Build builds the Dockerfile, pushes to Artifact
+Grant the service account two roles before deploying. Cloud Run and Cloud Build
+both run as the Compute Engine default service account unless told otherwise,
+and on projects created recently that account starts with no roles at all:
+
+```bash
+PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')
+SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
+# lets the deployed service call Gemini
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+    --member="serviceAccount:${SA}" --role="roles/aiplatform.user"
+
+# lets Cloud Build read the uploaded source and push the image
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+    --member="serviceAccount:${SA}" --role="roles/cloudbuild.builds.builder"
+```
+
+The second role is easy to miss. Older projects granted the default service
+account the broad Editor role, so source deploys worked without it; newer ones
+do not, and `gcloud run deploy --source` fails with
+`403 ... does not have storage.objects.get access` on the
+`run-sources-*` bucket, which reads like a bucket problem rather than a missing
+role.
+
+Then deploy from source — Cloud Build builds the Dockerfile, pushes to Artifact
 Registry and rolls out the revision in one step:
 
 ```bash
@@ -290,18 +314,14 @@ gcloud run deploy ticket-triage \
     --region us-central1 \
     --allow-unauthenticated \
     --memory 1Gi \
+    --cpu 1 \
+    --timeout 120 \
+    --max-instances 3 \
     --set-env-vars GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID,GOOGLE_CLOUD_LOCATION=us-central1
 ```
 
-Grant the service's identity permission to call Vertex AI. Cloud Run uses the
-Compute Engine default service account unless told otherwise:
-
-```bash
-PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-    --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-    --role="roles/aiplatform.user"
-```
+`.gcloudignore` keeps the cached dataset (~233 MB) and the training code out of
+the build upload, so only the app and the serialised model are sent.
 
 Confirm it came up, including whether the LLM layer is active:
 
@@ -416,6 +436,8 @@ models/
   classifier.joblib  trained pipeline (committed, 7.5 MB)
   metadata.json      metrics and configuration
 Dockerfile
+.dockerignore          what stays out of the image
+.gcloudignore          what stays out of the Cloud Build upload
 requirements.txt       runtime dependencies
 requirements-dev.txt   adds training dependencies
 environment.txt        conda environment definition

@@ -1,0 +1,19 @@
+# Controls what gets uploaded to Cloud Build. Without this gcloud falls back to
+# .gitignore, which is close but not the same set.
+.git/
+.gitignore
+.dockerignore
+
+# Cached dataset (~233 MB), rebuilt by training/prepare_data.py.
+data/
+
+# Training code and deps are not needed to build the image; only the
+# serialised model in models/ ships.
+training/
+requirements-dev.txt
+environment.txt
+
+*.pdf
+__pycache__/
+*.pyc
+.venv/

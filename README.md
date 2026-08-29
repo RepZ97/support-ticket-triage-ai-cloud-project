@@ -50,7 +50,7 @@ fast, free to run, deterministic, and can be measured against a held-out test
 set.
 
 **Urgency and reply drafting** have no ground-truth labels in the dataset, and
-inventing a proxy label would not be honest. These are judgement tasks, so they
+inventing a proxy label would not be accurate. These are judgement tasks, so they
 are handled zero-shot by a large language model given the complaint plus the
 category the classifier already assigned.
 
@@ -62,7 +62,7 @@ optional one.
 ## 4. Dataset
 
 **Source:** [`milesbutler/consumer_complaints`](https://huggingface.co/datasets/milesbutler/consumer_complaints)
-on Hugging Face — a published extract of the
+on Hugging Face - a published extract of the
 [CFPB Consumer Complaint Database](https://www.consumerfinance.gov/data-research/consumer-complaints/),
 the US Consumer Financial Protection Bureau's public record of complaints filed
 against financial companies.
@@ -86,7 +86,7 @@ Two properties of this data needed handling:
 
 **The labels overlap.** CFPB renamed its product categories several times over
 the life of the database, so the raw data carries 18 labels for what are really
-8 products — `Credit reporting` and `Credit reporting, credit repair services,
+8 products - `Credit reporting` and `Credit reporting, credit repair services,
 or other personal consumer reports` are the same queue, as are `Credit card`,
 `Prepaid card` and `Credit card or prepaid card`. Training on the raw labels
 would mean penalising the model for confusing two names for one thing. They are
@@ -116,7 +116,7 @@ Final class distribution (201,679 rows, split 80/20 stratified):
 
 ### Routing classifier
 
-TF-IDF features into a linear classifier — a strong, well-understood baseline
+TF-IDF features into a linear classifier - a strong, well-understood baseline
 for topic classification on medium-length text, and cheap enough to run
 in-process on every request with no GPU.
 
@@ -131,7 +131,7 @@ Two classifiers were trained and compared on the held-out test set:
 | Model | Accuracy | Macro-F1 |
 |---|---|---|
 | LinearSVC (`C=0.5`) | 0.8636 | 0.8392 |
-| **Logistic Regression (`C=4.0`)** — served | 0.8599 | 0.8353 |
+| **Logistic Regression (`C=4.0`)** - served | 0.8599 | 0.8353 |
 
 LinearSVC scores marginally higher, but it only exposes `decision_function`,
 not calibrated class probabilities. The API returns a confidence score that the
@@ -161,7 +161,7 @@ loans) and overlaps genuinely with `Debt collection` and `Credit or prepaid
 card`. `Money transfer / virtual currency` has good precision but weak recall,
 which is the normal consequence of being the smallest class at 1.7% of the
 data. Confusion is concentrated between semantically adjacent queues rather
-than scattered, which is the behaviour you want — a misroute lands somewhere
+than scattered, which is the behaviour you want - a misroute lands somewhere
 plausible.
 
 ### Urgency and reply drafting
@@ -298,14 +298,7 @@ gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
     --member="serviceAccount:${SA}" --role="roles/cloudbuild.builds.builder"
 ```
 
-The second role is easy to miss. Older projects granted the default service
-account the broad Editor role, so source deploys worked without it; newer ones
-do not, and `gcloud run deploy --source` fails with
-`403 ... does not have storage.objects.get access` on the
-`run-sources-*` bucket, which reads like a bucket problem rather than a missing
-role.
-
-Then deploy from source — Cloud Build builds the Dockerfile, pushes to Artifact
+Then deploy from source - Cloud Build builds the Dockerfile, pushes to Artifact
 Registry and rolls out the revision in one step:
 
 ```bash
@@ -330,7 +323,7 @@ curl https://YOUR_SERVICE_URL/health
 ```
 
 `"assessment": {"enabled": true, ...}` means Vertex AI is reachable. If it
-reports `enabled: false`, the routing API is still fully functional — check the
+reports `enabled: false`, the routing API is still fully functional - check the
 `reason` field, which is usually a missing env var or the IAM binding above not
 having propagated yet.
 
@@ -398,7 +391,7 @@ Generated OpenAPI documentation.
 ## 11. Docker Instructions
 
 The image expects `models/classifier.joblib` to exist, so train before building
-(see Local Setup). Training dependencies are not installed in the image — only
+(see Local Setup). Training dependencies are not installed in the image - only
 the serialised artifact ships.
 
 ```bash
